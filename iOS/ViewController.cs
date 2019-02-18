@@ -7,14 +7,17 @@ using SocketSampleShared.Helper;
 using System.Collections.ObjectModel;
 using UIKit;
 using SocketSampleShared.Models;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace WebSocketsSample.iOS
 {
-    public partial class ViewController : UIViewController , IListener
+    public partial class ViewController : UIViewController //, IListener
     {
         public ISocket socket;
+        public IList<SocketSampleShared.Models.Messages> msglist;
         public static readonly CancellationTokenSource can_tok = new CancellationTokenSource();
-        ObservableCollection<SocketSampleShared.Models.Messages> mess;
+        //ObservableCollection<SocketSampleShared.Models.Messages> mess;
         public ViewController viewController;
 
         public ViewController(IntPtr handle) : base(handle)
@@ -31,17 +34,18 @@ namespace WebSocketsSample.iOS
 
         private void InitilizeViews()
         {
+            DismissKeyboardOnTouchOutside();
             // Perform any additional setup after loading the view, typically from a nib.
             Button.AccessibilityIdentifier = "myButton";
 
-            socket = new SocketImpl(viewController);
-            socket.ConnectToServerAsync();
+            //socket = new SocketImpl(viewController);
+            //socket.ConnectToServerAsync();
 
             Button.TouchUpInside += delegate
             {
                 if(!string.IsNullOrEmpty(editfield.Text)|| !string.IsNullOrWhiteSpace(editfield.Text))
                 {
-                    socket.SendMessageAsync(editfield.Text, "IOS");
+                    //socket.SendMessageAsync(editfield.Text, "IOS");
                 }
                 else
                 {
@@ -55,8 +59,20 @@ namespace WebSocketsSample.iOS
                     PresentViewController(okAlertController, true, null);
                 }
             };
-        }
+            nextButton.TouchUpInside += delegate
+            {
+                SecondPage secondPage = this.Storyboard.InstantiateViewController("SecondPage") as SecondPage;
+                this.NavigationController.PushViewController(secondPage, true);
+            };
 
+        }
+        private void DismissKeyboardOnTouchOutside()
+        {
+            var g = new UITapGestureRecognizer(() => View.EndEditing(true));
+            g.CancelsTouchesInView = false; //for iOS5
+
+            View.AddGestureRecognizer(g);
+        }
         public override void DidReceiveMemoryWarning()
         {
             base.DidReceiveMemoryWarning();
@@ -66,6 +82,7 @@ namespace WebSocketsSample.iOS
 
         public void RunPlatformCode(ObservableCollection<SocketSampleShared.Models.Messages> msgs)
         {
+            msglist = msgs;
             try
             {
                 if (msgs.Count > 0)

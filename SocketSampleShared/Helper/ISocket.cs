@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net.WebSockets;
+using System.Threading.Tasks;
 
 namespace SocketSampleShared.Helper
 {
@@ -15,6 +17,6 @@ namespace SocketSampleShared.Helper
 
     public interface IListener 
     {
-        void RunPlatformCode(ObservableCollection<Models.Messages> msgs);
+        void RunPlatformCode(IList<Models.Messages> msgs , Models.Messages msgObj);
     }
 }

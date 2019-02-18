@@ -22,6 +22,10 @@ namespace WebSocketsSample.iOS
 
         [Outlet]
         [GeneratedCode ("iOS Designer", "1.0")]
+        UIKit.UIButton nextButton { get; set; }
+
+        [Outlet]
+        [GeneratedCode ("iOS Designer", "1.0")]
         UIKit.UITextView textView { get; set; }
 
         void ReleaseDesignerOutlets ()
@@ -34,6 +38,11 @@ namespace WebSocketsSample.iOS
             if (editfield != null) {
                 editfield.Dispose ();
                 editfield = null;
+            }
+
+            if (nextButton != null) {
+                nextButton.Dispose ();
+                nextButton = null;
             }
 
             if (textView != null) {

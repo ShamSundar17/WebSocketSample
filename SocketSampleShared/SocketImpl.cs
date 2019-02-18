@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Plugin.DeviceInfo;
 using SocketSampleShared.Helper;
+using SocketSampleShared.Models;
 
 #if __IOS__
     using WebSocketsSample.iOS;
@@ -19,20 +20,24 @@ namespace SocketSampleShared
 {
     public class SocketImpl : ISocket 
     {
-        public static readonly ClientWebSocket client = new ClientWebSocket();
-        public static readonly CancellationTokenSource cts = new CancellationTokenSource();
-
+        public readonly ClientWebSocket client ;
+        public readonly CancellationTokenSource cts ;
         public ObservableCollection<Models.Messages> messages = new ObservableCollection<Models.Messages>();
         public IListener listener;
+
 #if __IOS__
-        public SocketImpl(ViewController viewController)
+        public SocketImpl(SecondPage viewController)
         {
             this.listener = viewController;
+            this.client = new ClientWebSocket();
+            this.cts = new CancellationTokenSource();
         }
 #else
         public SocketImpl(MainActivity activity)
         {
             this.listener = activity;
+            this.client = new ClientWebSocket();
+            this.cts = new CancellationTokenSource();
         }
 #endif
 
@@ -61,6 +66,8 @@ namespace SocketSampleShared
                     break;
                 case "Closed":
                     Console.WriteLine("Websocket state : Closed");
+                    await client.ConnectAsync(new Uri(Constants.SocketUrl), cts.Token);
+                    ReceiveMessageAsync();
                     break;
                 case "Aborted":
                     Console.WriteLine("Websocket state : Aborted");
@@ -89,12 +96,12 @@ namespace SocketSampleShared
                                 var messageBytes = message.Skip(message.Offset).Take(result.Count).ToArray();
                                 string serialisedMessae = Encoding.UTF8.GetString(messageBytes);
                                 Console.WriteLine($"ReceiveAsync: { serialisedMessae}");
-                                //GetReceivedMsgObj(serialisedMessae);
+
                                 try
                                 {
                                     var msg = JsonConvert.DeserializeObject<Models.Messages>(serialisedMessae);
                                     messages.Add(msg);
-                                    listener.RunPlatformCode(messages);
+                                    listener.RunPlatformCode(messages, msg);
                                 }
                                 catch (Exception ex)
                                 {
@@ -158,12 +165,15 @@ namespace SocketSampleShared
 
         private ArraySegment<byte> CreateMessageObj(string message , string username)
         {
-            var msg = new Message
+            var msg = new Models.Messages
             {
-                Name = username,
-                MessagDateTime = DateTime.Now,
                 Text = message,
-                UserId = CrossDeviceInfo.Current.Id
+                Type = MessageType.Outgoing
+                //Name = username,
+                //MessagDateTime = DateTime.Now,
+                //Text = message,
+                //UserId = CrossDeviceInfo.Current.Id
+
             };
 
             string serialisedMessage = JsonConvert.SerializeObject(msg);
@@ -178,9 +188,17 @@ namespace SocketSampleShared
             return client.State;
         }
 
-        public async void CloseSocketServerAsync()
+        public void CloseSocketServerAsync()
         {
-            await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure",cts.Token);
+            Console.WriteLine("Disposing websocket");
+
+            client.Dispose();
+            cts.Dispose();
+
+            //await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", cts.Token);
+            //await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure",cts.Token);
+
+
         }
     }
 }
