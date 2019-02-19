@@ -169,6 +169,7 @@ namespace SocketSampleShared
             {
                 Text = message,
                 Type = MessageType.Incoming
+
                 //Name = username,
                 //MessagDateTime = DateTime.Now,
                 //Text = message,
