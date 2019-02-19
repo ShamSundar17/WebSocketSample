@@ -168,7 +168,7 @@ namespace SocketSampleShared
             var msg = new Models.Messages
             {
                 Text = message,
-                Type = MessageType.Outgoing
+                Type = MessageType.Incoming
                 //Name = username,
                 //MessagDateTime = DateTime.Now,
                 //Text = message,
